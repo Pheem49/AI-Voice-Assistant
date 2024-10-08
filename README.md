@@ -11,10 +11,10 @@ Create the following directory structure for your project:
 ```text
 voice_assistant_flask/
 ├── static/ 
-│         ├── styles.css
-│         └── script.js 
+│       ├── styles.css
+│       └── script.js 
 ├── templates/ 
-│ └── index.html 
+│       └── index.html 
 ├── app.py 
 └── .env
 ```
@@ -28,7 +28,10 @@ Download Python songs on each [ Python official website ](https://www.python.org
 ```text
 pip install Flask openai python-dotenv
 ```
-
+If unable to run. Install this version of openai.
+```text
+pip install openai==0.28
+```
 Once this completes, running  `pip list`  will show you the Python libraries you have installed in your current environment, which should confirm that the OpenAI Python library was successfully installed.
 
 ## Set up your API key for a single project
@@ -40,12 +43,19 @@ In order for your  **.env**  file to be ignored by version control, create a  **
 
 Once you create the  `.gitignore`  and  `.env`  files using the terminal or an integrated development environment (IDE), copy your secret API key and set it as the  `OPENAI_API_KEY`  in your  `.env`  file. If you haven't created a secret key yet, you can do so on the  [API key page](https://platform.openai.com/account/api-keys).
 
-Create a `.env` file
+**Create a `.env` file**
+Add your OpenAI API key:
 ```text
 # Once you add your API key below, make sure to not share it with anyone! The API key should remain private.
 
 OPENAI_API_KEY="your-api-key-here"
 ```
+**Permanent setup**: To make the setup permanent, add the variable through the system properties as follows:
+
+    -   Right-click on 'This PC' or 'My Computer' and select 'Properties'.
+    -   Click on 'Advanced system settings'.
+    -   Click the 'Environment Variables' button.
+    -   In the 'System variables' section, click 'New...' and enter OPENAI_API_KEY as the variable name and your API key as the variable value.
 
 ## Run the Flask Server
 
