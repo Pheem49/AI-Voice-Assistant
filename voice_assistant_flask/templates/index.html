@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Voice Assistant</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
@@ -14,6 +15,11 @@
         <p id="transcription"></p>
         <p id="response"></p>
     </div>
+    <div class="waveform-container">
+        <div id="user-waveform" class="waveform"></div>
+        <div id="ai-waveform" class="waveform"></div>
+    </div>
+    
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

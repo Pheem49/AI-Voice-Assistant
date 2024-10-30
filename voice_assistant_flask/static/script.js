@@ -6,9 +6,29 @@ const responseElement = document.getElementById("response");
 let recognizing = false;
 let speechRecognition;
 
+// ฟังก์ชันสำหรับแสดงข้อความทีละตัวอักษร
+function typeWriter(element, text, i = 0) {
+    if (i < text.length) {
+        element.textContent += text.charAt(i);
+        setTimeout(() => typeWriter(element, text, i + 1), 30); // ปรับความเร็วตามต้องการ
+    } else {
+        element.classList.add("show"); // เพิ่มคลาสสำหรับอนิเมชันหลังจากพิมพ์เสร็จ
+    }
+}
+
+// ฟังก์ชันสำหรับอัปเดตข้อความพร้อมแอนิเมชัน
+function updateText(element, text) {
+    element.classList.remove("show"); // เอาแอนิเมชันออกก่อน
+    void element.offsetWidth; // รีเฟรชแอนิเมชัน
+    element.textContent = ""; // เคลียร์ข้อความก่อน
+    typeWriter(element, text); // เรียกใช้ฟังก์ชัน typeWriter
+}
+
+
+
 if ('webkitSpeechRecognition' in window && 'speechSynthesis' in window) {
     speechRecognition = new webkitSpeechRecognition();
-    speechRecognition.continuous = true;  // Allow continuous listening
+    speechRecognition.continuous = true; // Allow continuous listening
     speechRecognition.interimResults = false; // Don't show interim results
     speechRecognition.lang = 'th-TH'; // Set to Thai language
 
@@ -20,7 +40,7 @@ if ('webkitSpeechRecognition' in window && 'speechSynthesis' in window) {
 
     speechRecognition.onresult = async (event) => {
         const transcript = event.results[event.results.length - 1][0].transcript;
-        transcriptionElement.textContent = `You said: ${transcript}`;
+        updateText(transcriptionElement, `You said: ${transcript}`); // ใช้ฟังก์ชัน updateText
 
         // Send the transcript to the server for AI response
         const response = await fetch('/api/respond', {
@@ -30,7 +50,7 @@ if ('webkitSpeechRecognition' in window && 'speechSynthesis' in window) {
         });
 
         const data = await response.json();
-        responseElement.textContent = `AI response: ${data.response}`;
+        updateText(responseElement, `AI response: ${data.response}`); // ใช้ฟังก์ชัน updateText
 
         // Use the Web Speech API for AI Text-to-Speech
         const utterance = new SpeechSynthesisUtterance(data.response);
@@ -44,13 +64,13 @@ if ('webkitSpeechRecognition' in window && 'speechSynthesis' in window) {
 
     speechRecognition.onend = () => {
         if (recognizing) {
-            speechRecognition.start();  // Restart listening
+            speechRecognition.start(); // Restart listening
         }
     };
 
     startBtn.onclick = () => {
         if (!recognizing) {
-            speechRecognition.start();  // Start recognition
+            speechRecognition.start(); // Start recognition
         }
     };
 
