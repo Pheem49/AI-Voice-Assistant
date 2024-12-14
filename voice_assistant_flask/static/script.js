@@ -1,87 +1,110 @@
+class SpeechAssistant {
+    constructor(transcriptionElement, responseElement) {
+        this.transcriptionElement = transcriptionElement;
+        this.responseElement = responseElement;
+        this.recognizing = false;
+        this.initRecognition();
+    }
+
+    initRecognition() {
+        if (!('webkitSpeechRecognition' in window)) {
+            alert("Your browser does not support the Web Speech API.");
+            return;
+        }
+
+        this.speechRecognition = new webkitSpeechRecognition();
+        this.speechRecognition.continuous = true;
+        this.speechRecognition.interimResults = false;
+        this.speechRecognition.lang = 'th-TH';
+
+        this.speechRecognition.onstart = () => this.onStart();
+        this.speechRecognition.onresult = (event) => this.onResult(event);
+        this.speechRecognition.onend = () => this.onEnd();
+        this.speechRecognition.onerror = (event) => this.onError(event);
+    }
+
+    start() {
+        if (!this.recognizing) {
+            this.speechRecognition.start();
+        }
+    }
+
+    stop() {
+        if (this.recognizing) {
+            this.speechRecognition.stop();
+            this.recognizing = false;
+        }
+    }
+
+    onStart() {
+        this.recognizing = true;
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
+    }
+
+    async onResult(event) {
+        const transcript = event.results[event.results.length - 1][0].transcript;
+        this.animateText(this.transcriptionElement, `You said: ${transcript}`);
+
+        try {
+            const response = await fetch('/api/respond', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt: transcript }),
+            });
+
+            if (!response.ok) throw new Error(`API error: ${response.status}`);
+            const data = await response.json();
+            this.animateText(this.responseElement, `AI response: ${data.response}`);
+
+            const utterance = new SpeechSynthesisUtterance(data.response);
+            utterance.lang = 'th-TH';
+            utterance.onend = () => this.speechRecognition.start();
+            window.speechSynthesis.speak(utterance);
+
+        } catch (error) {
+            console.error("Error:", error);
+            this.animateText(this.responseElement, "An error occurred while processing your request.");
+        }
+    }
+
+    onEnd() {
+        if (this.recognizing) {
+            this.speechRecognition.start();
+        }
+    }
+
+    onError(event) {
+        console.error("Speech Recognition Error:", event.error);
+        this.animateText(this.responseElement, "An error occurred with speech recognition.");
+    }
+
+    animateText(element, text, speed = 30) {
+        element.textContent = "";
+        let i = 0;
+
+        const type = () => {
+            if (i < text.length) {
+                element.textContent += text.charAt(i);
+                i++;
+                setTimeout(type, speed);
+            } else {
+                element.classList.add("show");
+            }
+        };
+        type();
+    }
+}
+
+// DOM Elements
 const startBtn = document.getElementById("start-btn");
 const stopBtn = document.getElementById("stop-btn");
 const transcriptionElement = document.getElementById("transcription");
 const responseElement = document.getElementById("response");
 
-let recognizing = false;
-let speechRecognition;
+// Initialize Speech Assistant
+const assistant = new SpeechAssistant(transcriptionElement, responseElement);
 
-// ฟังก์ชันสำหรับแสดงข้อความทีละตัวอักษร
-function typeWriter(element, text, i = 0) {
-    if (i < text.length) {
-        element.textContent += text.charAt(i);
-        setTimeout(() => typeWriter(element, text, i + 1), 30); // ปรับความเร็วตามต้องการ
-    } else {
-        element.classList.add("show"); // เพิ่มคลาสสำหรับอนิเมชันหลังจากพิมพ์เสร็จ
-    }
-}
-
-// ฟังก์ชันสำหรับอัปเดตข้อความพร้อมแอนิเมชัน
-function updateText(element, text) {
-    element.classList.remove("show"); // เอาแอนิเมชันออกก่อน
-    void element.offsetWidth; // รีเฟรชแอนิเมชัน
-    element.textContent = ""; // เคลียร์ข้อความก่อน
-    typeWriter(element, text); // เรียกใช้ฟังก์ชัน typeWriter
-}
-
-
-
-if ('webkitSpeechRecognition' in window && 'speechSynthesis' in window) {
-    speechRecognition = new webkitSpeechRecognition();
-    speechRecognition.continuous = true; // Allow continuous listening
-    speechRecognition.interimResults = false; // Don't show interim results
-    speechRecognition.lang = 'th-TH'; // Set to Thai language
-
-    speechRecognition.onstart = () => {
-        recognizing = true;
-        startBtn.disabled = true;
-        stopBtn.disabled = false;
-    };
-
-    speechRecognition.onresult = async (event) => {
-        const transcript = event.results[event.results.length - 1][0].transcript;
-        updateText(transcriptionElement, `You said: ${transcript}`); // ใช้ฟังก์ชัน updateText
-
-        // Send the transcript to the server for AI response
-        const response = await fetch('/api/respond', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt: transcript }),
-        });
-
-        const data = await response.json();
-        updateText(responseElement, `AI response: ${data.response}`); // ใช้ฟังก์ชัน updateText
-
-        // Use the Web Speech API for AI Text-to-Speech
-        const utterance = new SpeechSynthesisUtterance(data.response);
-        utterance.lang = 'th-TH';  // Set language to Thai
-        utterance.onend = () => {
-            // Automatically start listening again after AI response
-            speechRecognition.start();
-        };
-        window.speechSynthesis.speak(utterance);
-    };
-
-    speechRecognition.onend = () => {
-        if (recognizing) {
-            speechRecognition.start(); // Restart listening
-        }
-    };
-
-    startBtn.onclick = () => {
-        if (!recognizing) {
-            speechRecognition.start(); // Start recognition
-        }
-    };
-
-    stopBtn.onclick = () => {
-        if (recognizing) {
-            speechRecognition.stop();
-            recognizing = false;
-            startBtn.disabled = false;
-            stopBtn.disabled = true;
-        }
-    };
-} else {
-    alert("Your browser does not support the Web Speech API.");
-}
+// Button Event Listeners
+startBtn.onclick = () => assistant.start();
+stopBtn.onclick = () => assistant.stop();

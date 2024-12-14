@@ -1,4 +1,7 @@
 # How to use [ AI-Voice-Assistant ](https://github.com/Pheem49/AI-Voice-Assistant)
+โปรเจคนี้เป็นการพัฒนาแอปพลิเคชันเว็บที่ใช้ Flask ในการสร้างอินเทอร์เฟซผู้ใช้และ OpenAI GPT-4 ในการตอบคำถามหรือโต้ตอบกับผู้ใช้ โดยแอปนี้ทำหน้าที่เป็นตัวกลางในการเชื่อมต่อระหว่างผู้ใช้กับ AI เพื่อให้ได้การตอบกลับที่เหมาะสมจากโมเดล GPT-4 ในรูปแบบการสนทนา
+
+This project involves developing a web application using Flask for the user interface and OpenAI’s GPT-4 for generating responses to user queries. The application serves as an intermediary between the user and the AI, providing conversational responses based on the input from the user.
 
 ## Overview
 The website will:

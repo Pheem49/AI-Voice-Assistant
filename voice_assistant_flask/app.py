@@ -22,10 +22,10 @@ def respond():
 
     try:
         response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4o-mini",
             messages=[{"role": "user", "content": prompt}],
-            max_tokens=250,
-            temperature=0.7,
+            #max_tokens=250,
+            #temperature=0.7,
         )
         ai_response = response.choices[0].message.content.strip()
         return jsonify({'response': ai_response})
