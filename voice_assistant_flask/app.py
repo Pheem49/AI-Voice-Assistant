@@ -10,7 +10,6 @@ app = Flask(__name__)
 api_key = os.getenv("OPENAI_API_KEY")
 print(f"API Key Loaded: {api_key}")
 
-
 @app.route('/')
 def index():
     return render_template('index.html')

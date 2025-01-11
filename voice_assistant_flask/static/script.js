@@ -1,5 +1,10 @@
 class SpeechAssistant {
     constructor(transcriptionElement, responseElement) {
+        if (!transcriptionElement || !responseElement) {
+            console.error("Required DOM elements are missing.");
+            return;
+        }
+
         this.transcriptionElement = transcriptionElement;
         this.responseElement = responseElement;
         this.recognizing = false;
@@ -33,6 +38,8 @@ class SpeechAssistant {
         if (this.recognizing) {
             this.speechRecognition.stop();
             this.recognizing = false;
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
         }
     }
 
@@ -70,6 +77,7 @@ class SpeechAssistant {
 
     onEnd() {
         if (this.recognizing) {
+            console.log("Recognition ended, restarting...");
             this.speechRecognition.start();
         }
     }
@@ -80,6 +88,7 @@ class SpeechAssistant {
     }
 
     animateText(element, text, speed = 30) {
+        if (!element) return;
         element.textContent = "";
         let i = 0;
 
@@ -102,9 +111,14 @@ const stopBtn = document.getElementById("stop-btn");
 const transcriptionElement = document.getElementById("transcription");
 const responseElement = document.getElementById("response");
 
-// Initialize Speech Assistant
-const assistant = new SpeechAssistant(transcriptionElement, responseElement);
+if (!startBtn || !stopBtn || !transcriptionElement || !responseElement) {
+    console.error("One or more DOM elements are missing.");
+    alert("Some necessary elements are missing. Please check the HTML structure.");
+} else {
+    // Initialize Speech Assistant
+    const assistant = new SpeechAssistant(transcriptionElement, responseElement);
 
-// Button Event Listeners
-startBtn.onclick = () => assistant.start();
-stopBtn.onclick = () => assistant.stop();
+    // Button Event Listeners
+    startBtn.onclick = () => assistant.start();
+    stopBtn.onclick = () => assistant.stop();
+}
