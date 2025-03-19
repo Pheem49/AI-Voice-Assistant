@@ -1,12 +1,9 @@
 class SpeechAssistant {
-    constructor(transcriptionElement, responseElement) {
-        if (!transcriptionElement || !responseElement) {
-            console.error("Required DOM elements are missing.");
-            return;
-        }
-
+    constructor(transcriptionElement, responseElement, userWaveform, aiWaveform) {
         this.transcriptionElement = transcriptionElement;
         this.responseElement = responseElement;
+        this.userWaveform = userWaveform;
+        this.aiWaveform = aiWaveform;
         this.recognizing = false;
         this.initRecognition();
     }
@@ -31,6 +28,7 @@ class SpeechAssistant {
     start() {
         if (!this.recognizing) {
             this.speechRecognition.start();
+            this.toggleWaveform(this.userWaveform, true);
         }
     }
 
@@ -38,6 +36,7 @@ class SpeechAssistant {
         if (this.recognizing) {
             this.speechRecognition.stop();
             this.recognizing = false;
+            this.toggleWaveform(this.userWaveform, false);
             startBtn.disabled = false;
             stopBtn.disabled = true;
         }
@@ -52,6 +51,7 @@ class SpeechAssistant {
     async onResult(event) {
         const transcript = event.results[event.results.length - 1][0].transcript;
         this.animateText(this.transcriptionElement, `You said: ${transcript}`);
+        this.toggleWaveform(this.userWaveform, false);
 
         try {
             const response = await fetch('/api/respond', {
@@ -66,9 +66,13 @@ class SpeechAssistant {
 
             const utterance = new SpeechSynthesisUtterance(data.response);
             utterance.lang = 'th-TH';
-            utterance.onend = () => this.speechRecognition.start();
+            utterance.voice = window.speechSynthesis.getVoices().find(voice => voice.name.includes("Google ไทย")) || null;
+            utterance.onstart = () => this.toggleWaveform(this.aiWaveform, true);
+            utterance.onend = () => {
+                this.toggleWaveform(this.aiWaveform, false);
+                this.speechRecognition.start();
+            };
             window.speechSynthesis.speak(utterance);
-
         } catch (error) {
             console.error("Error:", error);
             this.animateText(this.responseElement, "An error occurred while processing your request.");
@@ -91,7 +95,6 @@ class SpeechAssistant {
         if (!element) return;
         element.textContent = "";
         let i = 0;
-
         const type = () => {
             if (i < text.length) {
                 element.textContent += text.charAt(i);
@@ -103,22 +106,30 @@ class SpeechAssistant {
         };
         type();
     }
+
+    toggleWaveform(element, active) {
+        if (active) {
+            element.style.opacity = "1";
+            element.style.animation = "wave-animation 1s infinite linear";
+        } else {
+            element.style.opacity = "0";
+            element.style.animation = "none";
+        }
+    }
 }
 
-// DOM Elements
 const startBtn = document.getElementById("start-btn");
 const stopBtn = document.getElementById("stop-btn");
 const transcriptionElement = document.getElementById("transcription");
 const responseElement = document.getElementById("response");
+const userWaveform = document.getElementById("user-waveform");
+const aiWaveform = document.getElementById("ai-waveform");
 
-if (!startBtn || !stopBtn || !transcriptionElement || !responseElement) {
+if (!startBtn || !stopBtn || !transcriptionElement || !responseElement || !userWaveform || !aiWaveform) {
     console.error("One or more DOM elements are missing.");
     alert("Some necessary elements are missing. Please check the HTML structure.");
 } else {
-    // Initialize Speech Assistant
-    const assistant = new SpeechAssistant(transcriptionElement, responseElement);
-
-    // Button Event Listeners
+    const assistant = new SpeechAssistant(transcriptionElement, responseElement, userWaveform, aiWaveform);
     startBtn.onclick = () => assistant.start();
     stopBtn.onclick = () => assistant.stop();
 }

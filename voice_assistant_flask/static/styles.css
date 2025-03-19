@@ -11,20 +11,30 @@ body {
     overflow: hidden;
 }
 
+/* Waveform Animation */
 .waveform-container {
     position: relative;
     height: 50px;
+    width: 100%;
     margin-top: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .waveform {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    height: 100%;
+    width: 100px;
+    height: 50px;
     background: linear-gradient(to right, rgba(0, 255, 0, 0.5), rgba(0, 255, 0, 0));
+    opacity: 0;
+    transform: scaleY(1);
+    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+/* Active waveform */
+.waveform.active {
+    opacity: 1;
     animation: wave-animation 1s infinite linear;
-    opacity: 0; /* ซ่อนคลื่นเสียงเริ่มต้น */
 }
 
 @keyframes wave-animation {
@@ -41,16 +51,18 @@ body {
     border-radius: 15px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(10px);
-    animation: fadeIn 1s ease-in-out; /* ให้ container ค่อยๆ ปรากฏขึ้น */
+    animation: fadeIn 1s ease-in-out;
 }
 
+/* AI Response Styling */
 .response {
     opacity: 0;
-    transition: opacity 0.5s ease-in-out; /* เปลี่ยนความโปร่งใส */
+    transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
 }
 
 .response.show {
-    opacity: 1; /* แสดงข้อความ */
+    opacity: 1;
+    transform: translateY(0);
 }
 
 /* Button Styles */
@@ -64,19 +76,22 @@ button {
     background: linear-gradient(90deg, #ff0080, #ff8c00);
     color: #ffffff;
     transition: all 0.3s ease;
+    box-shadow: 0 0 10px rgba(255, 140, 0, 0.8); /* Glow Effect */
 }
 
 button:hover {
     transform: scale(1.05);
     background: linear-gradient(90deg, #ff8c00, #ff0080);
+    box-shadow: 0 0 20px rgba(255, 140, 0, 1);
 }
 
 button:disabled {
     background-color: #555;
     cursor: not-allowed;
+    box-shadow: none;
 }
 
-/* Transcription and Response Styles */
+/* Transcription & Response Box */
 #transcription, #response {
     font-size: 1.2rem;
     margin-top: 20px;
@@ -85,29 +100,31 @@ button:disabled {
     border-radius: 10px;
     background: rgba(255, 255, 255, 0.1);
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-    opacity: 0; /* เริ่มต้นเป็นโปร่งใส */
-    transform: translateY(20px); /* เริ่มต้นจากตำแหน่งล่าง */
-    animation: slideUpFadeIn 0.8s ease forwards; /* ใช้แอนิเมชัน */
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
 }
 
-/* Animation Keyframes */
+/* Show effect for new text */
+#transcription.show, #response.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Fade-in Animation */
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
 }
 
+/* Slide-Up Animation */
 @keyframes slideUpFadeIn {
     0% {
         opacity: 0;
-        transform: translateY(20px); /* เริ่มจากตำแหน่งที่ต่ำลง */
+        transform: translateY(20px);
     }
     100% {
         opacity: 1;
-        transform: translateY(0); /* กลับมายังตำแหน่งปกติ */
+        transform: translateY(0);
     }
-}
-
-/* Delay animation when text changes */
-#transcription.show, #response.show {
-    animation: slideUpFadeIn 0.8s ease forwards;
 }
